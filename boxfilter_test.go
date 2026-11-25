@@ -231,7 +231,14 @@ func TestSumBlocksDegenerate(t *testing.T) {
 	src := randBytes(rand.New(rand.NewSource(9)), 4*40)
 	dst := make([]uint32, 4*8)
 	for _, c := range [][3]int{{0, 1, 16}, {-1, 1, 16}, {2, 0, 16}, {2, -1, 16}, {4, 1, 12}, {2, 1000, 16}} {
-		SumBlocks(dst, src, c[2], c[0], c[1]) // n, m, stride
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("n=%d m=%d stride=%d: a degenerate shape must be refused, it panicked: %v", c[0], c[1], c[2], r)
+				}
+			}()
+			SumBlocks(dst, src, c[2], c[0], c[1]) // n, m, stride
+		}()
 		if !slices.Equal(dst, make([]uint32, 4*8)) {
 			t.Fatalf("n=%d m=%d stride=%d wrote to dst", c[0], c[1], c[2])
 		}

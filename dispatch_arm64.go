@@ -27,9 +27,6 @@ func sumGroupsNEON(dst, src []uint32, n int)
 func sumBlocksNEON(dst []uint32, src []byte, stride, n, m int)
 
 func sumBlocks(dst []uint32, src []byte, stride, n, m, groups int) (done int) {
-	if groups == 0 {
-		return 0
-	}
 	sumBlocksNEON(dst[:4*groups], src, stride, n, m)
 	return groups
 }
