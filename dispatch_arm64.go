@@ -29,9 +29,6 @@ func accumPremul(acc []uint32, src []byte, n int, w uint32) (done int) {
 }
 
 func sumGroups(dst, src []uint32, groups, n int) (done int) {
-	if groups == 0 {
-		return 0
-	}
 	sumGroupsNEON(dst[:4*groups], src[:4*groups*n], n)
 	return groups
 }

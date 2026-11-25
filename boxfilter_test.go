@@ -98,8 +98,16 @@ func TestSumGroupsShortAndDegenerate(t *testing.T) {
 	src := randU32(rng, 4*10)
 	dst := randU32(rng, 4*7)
 	keep := slices.Clone(dst)
-	SumGroups(dst, src, 0)
-	SumGroups(dst, src, -3)
+	for _, n := range []int{0, -3} {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("n=%d panicked: %v", n, r)
+				}
+			}()
+			SumGroups(dst, src, n)
+		}()
+	}
 	if !slices.Equal(dst, keep) {
 		t.Fatal("n < 1 must do nothing")
 	}
