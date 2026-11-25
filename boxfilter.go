@@ -34,6 +34,32 @@ func AccumPremul(acc []uint32, src []byte, w uint32) {
 	accumPremulRef(acc[4*done:4*n], src[4*done:4*n], w)
 }
 
+// SumBlocks is the whole of a box downscale by an INTEGER factor in one pass over
+// the source: destination pixel j (four uint32, R, G, B, A order) is the sum of the
+// premultiplied pixels of the n x m block whose top-left pixel is pixel j*n of row
+// 0 of src, rows being stride bytes apart:
+//
+//	dst[4j+0] = sum over the block of R*A   dst[4j+1] = sum of G*A
+//	dst[4j+2] = sum over the block of B*A   dst[4j+3] = sum of A
+//
+// It is AccumPremul over m rows (every weight 1) followed by SumGroups with the
+// same n, but the sums stay in vector registers for the whole block and only the
+// result is stored: nothing is written to, or read back from, an accumulator row.
+// A kernel reads no byte outside the blocks.
+//
+// It fills as many whole destination pixels as dst holds, as each of the m rows
+// holds (stride/(4n) per row) and as src covers (the last row included); n < 1,
+// m < 1 or stride < 4n does nothing. Like the other functions the sums wrap modulo
+// 2^32: exact while 65025*n*m < 2^32.
+func SumBlocks(dst []uint32, src []byte, stride, n, m int) {
+	if n < 1 || m < 1 || stride < 4*n || (m-1) > len(src)/stride {
+		return
+	}
+	groups := min(len(dst)/4, stride/(4*n), (len(src)-(m-1)*stride)/(4*n))
+	done := sumBlocks(dst, src, stride, n, m, groups)
+	sumBlocksRef(dst[4*done:4*groups], src[4*done*n:], stride, n, m)
+}
+
 // SumGroups sums runs of n pixels: dst pixel i (four uint32) is the channel-wise
 // sum of src pixels i*n .. i*n+n-1. It fills as many whole destination pixels as
 // both slices hold, and does nothing for n < 1.

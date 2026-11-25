@@ -16,6 +16,25 @@ func accumPremulRef(acc []uint32, src []byte, w uint32) {
 	}
 }
 
+// sumBlocksRef is the scalar definition of SumBlocks for len(dst)/4 groups; src
+// is addressed from the first pixel of the first group in row 0.
+func sumBlocksRef(dst []uint32, src []byte, stride, n, m int) {
+	for g := 0; g+4 <= len(dst); g += 4 {
+		var r, gr, b, a uint32
+		for y := 0; y < m; y++ {
+			for x := 0; x < n; x++ {
+				o := y*stride + (g/4*n+x)*4
+				al := uint32(src[o+3])
+				r += uint32(src[o]) * al
+				gr += uint32(src[o+1]) * al
+				b += uint32(src[o+2]) * al
+				a += al
+			}
+		}
+		dst[g], dst[g+1], dst[g+2], dst[g+3] = r, gr, b, a
+	}
+}
+
 // sumGroupsRef is the scalar definition of SumGroups: len(dst) is 4 per group
 // and len(src) is 4*n per group.
 func sumGroupsRef(dst, src []uint32, n int) {

@@ -143,6 +143,164 @@ func FuzzAccumPremul(f *testing.F) {
 	})
 }
 
+// blocks is the definition of SumBlocks, written from the doc comment: one
+// destination pixel per whole block, in a picture srcW pixels wide.
+func blocks(src []byte, stride, n, m, groups int) []uint32 {
+	want := make([]uint32, 4*groups)
+	for g := 0; g < groups; g++ {
+		for y := 0; y < m; y++ {
+			for x := 0; x < n; x++ {
+				o := y*stride + 4*(g*n+x)
+				a := uint32(src[o+3])
+				want[4*g] += uint32(src[o]) * a
+				want[4*g+1] += uint32(src[o+1]) * a
+				want[4*g+2] += uint32(src[o+2]) * a
+				want[4*g+3] += a
+			}
+		}
+	}
+	return want
+}
+
+// Every block shape, tails of 1, 2 and 3 pixels included, a row wider than the
+// blocks, and dst slots beyond the picture left alone.
+func TestSumBlocksMatchesTheDefinition(t *testing.T) {
+	rng := rand.New(rand.NewSource(6))
+	for n := 1; n <= 9; n++ {
+		for m := 1; m <= 5; m++ {
+			for groups := 0; groups <= 6; groups++ {
+				for _, extra := range []int{0, 3} { // pixels past the last block in each row
+					stride := 4 * (n*groups + extra)
+					if stride < 4*n {
+						stride = 4 * n
+					}
+					src := randBytes(rng, (m-1)*stride+4*n*groups)
+					dst := randU32(rng, 4*groups+8)
+					keep := slices.Clone(dst)
+					SumBlocks(dst, src, stride, n, m)
+					want := blocks(src, stride, n, m, min(groups, stride/(4*n)))
+					got := min(groups, stride/(4*n))
+					if !slices.Equal(dst[:4*got], want) || !slices.Equal(dst[4*got:], keep[4*got:]) {
+						t.Fatalf("n=%d m=%d groups=%d extra=%d: differs from the definition", n, m, groups, extra)
+					}
+				}
+			}
+		}
+	}
+}
+
+// The scalar reference is the oracle the kernels are held to: it must itself
+// equal the definition, on every shape (it is also the whole implementation
+// where no kernel exists).
+func TestSumBlocksRefMatchesTheDefinition(t *testing.T) {
+	rng := rand.New(rand.NewSource(7))
+	for n := 1; n <= 6; n++ {
+		for m := 1; m <= 4; m++ {
+			stride := 4 * (n*3 + 1)
+			src := randBytes(rng, (m-1)*stride+4*n*3)
+			dst := make([]uint32, 12)
+			sumBlocksRef(dst, src, stride, n, m)
+			if !slices.Equal(dst, blocks(src, stride, n, m, 3)) {
+				t.Fatalf("n=%d m=%d: reference differs from the definition", n, m)
+			}
+		}
+	}
+}
+
+// A block is read whole or not at all: the pixel count is the least of what dst
+// holds, what a row holds and what the LAST row still holds.
+func TestSumBlocksLimits(t *testing.T) {
+	rng := rand.New(rand.NewSource(8))
+	src := randBytes(rng, 4*(3*10)+4*7) // rows of 10 pixels, the last short of 3
+	stride := 4 * 10
+	dst := make([]uint32, 4*20)
+	SumBlocks(dst, src, stride, 3, 4) // 10/3 = 3 per row, the last row holds 7 pixels: 2 whole blocks
+	want := blocks(src, stride, 3, 4, 2)
+	if !slices.Equal(dst[:8], want) || !slices.Equal(dst[8:], make([]uint32, 4*18)) {
+		t.Fatal("the pixel count is not the least of dst, the row and the last row")
+	}
+	// A destination shorter than the picture.
+	short := make([]uint32, 4*1+3)
+	SumBlocks(short, src, stride, 3, 4)
+	if !slices.Equal(short[:4], want[:4]) || short[4] != 0 {
+		t.Fatal("a short dst was overrun or under-filled")
+	}
+}
+
+func TestSumBlocksDegenerate(t *testing.T) {
+	src := randBytes(rand.New(rand.NewSource(9)), 4*40)
+	dst := make([]uint32, 4*8)
+	for _, c := range [][3]int{{0, 1, 16}, {-1, 1, 16}, {2, 0, 16}, {2, -1, 16}, {4, 1, 12}, {2, 1000, 16}} {
+		SumBlocks(dst, src, c[2], c[0], c[1]) // n, m, stride
+		if !slices.Equal(dst, make([]uint32, 4*8)) {
+			t.Fatalf("n=%d m=%d stride=%d wrote to dst", c[0], c[1], c[2])
+		}
+	}
+	SumBlocks(nil, src, 16, 2, 1)
+	SumBlocks(dst, nil, 16, 2, 1)
+	if !slices.Equal(dst, make([]uint32, 4*8)) {
+		t.Fatal("an empty src wrote to dst")
+	}
+}
+
+// FuzzSumBlocks: any bytes and block shape agree with the definition, and no byte
+// outside the blocks is read (the source is cut to exactly what the blocks cover).
+func FuzzSumBlocks(f *testing.F) {
+	f.Add([]byte{1, 2, 3, 4, 255, 255, 255, 255, 9, 8, 7, 6}, uint8(3), uint8(1), uint8(0))
+	f.Add(make([]byte, 400), uint8(5), uint8(4), uint8(2))
+	f.Fuzz(func(t *testing.T, src []byte, n, m, extra uint8) {
+		nn, mm := int(n%11)+1, int(m%6)+1
+		stride := 4 * (nn*(len(src)/(4*nn*mm)) + int(extra%4))
+		if stride < 4*nn {
+			stride = 4 * nn
+		}
+		groups := stride / (4 * nn)
+		if need := (mm-1)*stride + 4*nn*groups; len(src) > need {
+			src = src[:need]
+		}
+		dst := make([]uint32, 4*groups)
+		SumBlocks(dst, src, stride, nn, mm)
+		avail := 0
+		if len(src) >= (mm-1)*stride {
+			avail = min(groups, (len(src)-(mm-1)*stride)/(4*nn))
+		}
+		want := blocks(src, stride, nn, mm, avail)
+		if !slices.Equal(dst[:4*avail], want) {
+			t.Fatalf("n=%d m=%d stride=%d len=%d differs", nn, mm, stride, len(src))
+		}
+	})
+}
+
+func BenchmarkSumBlocks(b *testing.B) {
+	rng := rand.New(rand.NewSource(1))
+	// 1000 wide, 4 x 4 blocks: one destination row of a 1000x700 to 250x175 downscale.
+	const w, groups = 1000, 250
+	for _, c := range [][2]int{{4, 4}, {2, 2}, {3, 3}, {8, 8}} {
+		n, m := c[0], c[1]
+		src := randBytes(rng, 4*w*m)
+		dst := make([]uint32, 4*(w/n))
+		name := itoa(n) + "x" + itoa(m)
+		b.Run(name, func(b *testing.B) {
+			b.SetBytes(int64(4 * w * m))
+			for i := 0; i < b.N; i++ {
+				SumBlocks(dst, src, 4*w, n, m)
+			}
+		})
+		b.Run(name+"-twopass", func(b *testing.B) { // AccumPremul over m rows, then SumGroups
+			acc, g := make([]uint32, 4*w), make([]uint32, 4*(w/n))
+			b.SetBytes(int64(4 * w * m))
+			for i := 0; i < b.N; i++ {
+				clear(acc)
+				for y := 0; y < m; y++ {
+					AccumPremul(acc, src[4*w*y:4*w*(y+1)], 1)
+				}
+				SumGroups(g, acc, n)
+			}
+		})
+	}
+	_ = groups
+}
+
 func BenchmarkAccumPremul(b *testing.B) {
 	rng := rand.New(rand.NewSource(1))
 	for _, n := range []int{24, 64, 256, 1000} {

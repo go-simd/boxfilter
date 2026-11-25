@@ -18,6 +18,12 @@ boxfilter.SumGroups(dst, acc, n)
   `acc += w*(R*A, G*A, B*A, A)`.
 * `SumGroups(dst, src []uint32, n int)`: channel-wise sum of runs of `n` pixels.
 
+* `SumBlocks(dst []uint32, src []byte, stride, n, m int)`: the whole integer-factor
+  downscale in one pass: destination pixel `j` is the sum of the premultiplied `n x m`
+  block at pixel `j*n` of row 0, rows `stride` bytes apart. The sums stay in vector
+  registers; no accumulator row is written or read back. A kernel reads no byte
+  outside the blocks.
+
 Sums wrap modulo 2^32; the caller keeps 65025 times the total weight below 2^32
 (a total weight of at most 66051). Integer arithmetic is exact, so every kernel
 is **bit-identical** to the scalar reference, checked by differential tests,
