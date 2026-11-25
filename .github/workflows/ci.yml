@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
-        with: { go-version: '1.27.3' }
+        with: { go-version: '1.27.4' }
       - run: go vet ./...
       - run: go test -v ./...
       - name: coverage gate (100%)
@@ -37,6 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
-        with: { go-version: '1.27.3' }
+        with: { go-version: '1.27.4' }
       - run: GOARCH=386 go test ./...
       - run: GOOS=linux GOARCH=riscv64 go vet ./...
