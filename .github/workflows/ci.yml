@@ -1,0 +1,42 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, arch: amd64 }
+          - { os: ubuntu-24.04-arm, arch: arm64 }
+          - { os: macos-latest, arch: arm64 }
+          - { os: windows-latest, arch: amd64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with: { go-version: '1.27.3' }
+      - run: go vet ./...
+      - run: go test -v ./...
+      - name: coverage gate (100%)
+        shell: bash
+        run: |
+          go test -covermode=atomic -coverprofile=cov.out ./...
+          pct=$(go tool cover -func=cov.out | awk '/^total:/{print $3}')
+          echo "coverage=$pct"
+          [ "$pct" = "100.0%" ] || { echo "coverage below 100%"; exit 1; }
+      # Fuzz targets run over their seed corpus deterministically; time-boxed
+      # randomized fuzzing is a manual run (go test -fuzz).
+      - run: go test -run '^Fuzz' ./...
+
+  # No SIMD kernel: the portable build must stay correct.
+  portable:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with: { go-version: '1.27.3' }
+      - run: GOARCH=386 go test ./...
+      - run: GOOS=linux GOARCH=riscv64 go vet ./...
