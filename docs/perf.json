@@ -1,0 +1,534 @@
+{
+  "schema": 1,
+  "status": "measured",
+  "date": "2026-11-26T08:52:15+01:00",
+  "commit": "4fef5e9cd22a63756ff5cdea8a09031088dbbded-dirty-d68e67c1",
+  "repo": "go-simd/boxfilter",
+  "go_version": "go1.27.4",
+  "machine": "darwin/arm64, 16 CPUs",
+  "ref_versions": {
+    "blas": "accelerate unknown",
+    "numpy": "2.5.4",
+    "python": "3.12.12"
+  },
+  "max_load": 8,
+  "load": {
+    "min": 4.9365234375,
+    "median": 5.0185546875,
+    "max": 5.1943359375
+  },
+  "valid": true,
+  "rows": [
+    {
+      "name": "DrawImage 256x256 to 24x24 translucent",
+      "func": "AccumPremul",
+      "reference": "Pillow resize(BOX) on RGBa",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 4971,
+      "ref_iters": 3184,
+      "rounds": [
+        {
+          "load_before": 5.1943359375,
+          "load_after": 5.1943359375,
+          "go_first": true,
+          "go_ns": 22052.898410782538,
+          "ref_ns": 33385.79616834171
+        },
+        {
+          "load_before": 5.1943359375,
+          "load_after": 5.1943359375,
+          "go_first": false,
+          "go_ns": 21813.367531683765,
+          "ref_ns": 33293.48555276382
+        },
+        {
+          "load_before": 5.1943359375,
+          "load_after": 5.1943359375,
+          "go_first": true,
+          "go_ns": 21820.014484007243,
+          "ref_ns": 33329.6953517588
+        },
+        {
+          "load_before": 5.1943359375,
+          "load_after": 5.1943359375,
+          "go_first": false,
+          "go_ns": 22053.317642325488,
+          "ref_ns": 33148.59453517588
+        },
+        {
+          "load_before": 5.1943359375,
+          "load_after": 5.1943359375,
+          "go_first": true,
+          "go_ns": 21903.951317642324,
+          "ref_ns": 33159.82255025126
+        },
+        {
+          "load_before": 5.1943359375,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 21935.12371756186,
+          "ref_ns": 33379.93341708543
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 21866.467109233556,
+          "ref_ns": 33299.793341708544
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 21903.951317642324,
+        "q1": 21843.240796620397,
+        "q3": 21994.0110641722
+      },
+      "ref": {
+        "median": 33299.793341708544,
+        "q1": 33226.65405150754,
+        "q3": 33354.81438442211
+      },
+      "ratio": 0.6577803980004663,
+      "verdict": "faster"
+    },
+    {
+      "name": "DrawImage 64x64 to 16x16 translucent",
+      "func": "AccumPremul",
+      "reference": "Pillow resize(BOX) on RGBa",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 80000,
+      "ref_iters": 20384,
+      "rounds": [
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 2242.5833375,
+          "ref_ns": 5858.1812205651495
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 2209.6171875,
+          "ref_ns": 5842.3313873626375
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 2210.51145,
+          "ref_ns": 5775.207662872842
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 2217.7401,
+          "ref_ns": 5783.347233124019
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 2212.243225,
+          "ref_ns": 5822.89010989011
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 2203.0401,
+          "ref_ns": 5795.789589874411
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 2197.74375,
+          "ref_ns": 5820.4903355573
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 2210.51145,
+        "q1": 2206.32864375,
+        "q3": 2214.9916625
+      },
+      "ref": {
+        "median": 5820.4903355573,
+        "q1": 5789.568411499215,
+        "q3": 5832.610748626374
+      },
+      "ratio": 0.37978096733466155,
+      "verdict": "faster"
+    },
+    {
+      "name": "DrawImage 1000x700 to 250x175 translucent",
+      "func": "AccumPremul",
+      "reference": "Pillow resize(BOX) on RGBa",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 324,
+      "ref_iters": 149,
+      "rounds": [
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 345695.0864197531,
+          "ref_ns": 719333.3288590604
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 351591.1790123457,
+          "ref_ns": 719114.6510067114
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 351610.85493827163,
+          "ref_ns": 719044.7382550335
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 355478.52160493826,
+          "ref_ns": 725675.0536912752
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 371453.7037037037,
+          "ref_ns": 728413.865771812
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": false,
+          "go_ns": 359207.1759259259,
+          "ref_ns": 719296.4228187919
+        },
+        {
+          "load_before": 5.0185546875,
+          "load_after": 5.0185546875,
+          "go_first": true,
+          "go_ns": 355040.50925925927,
+          "ref_ns": 721446.865771812
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 355040.50925925927,
+        "q1": 351601.01697530865,
+        "q3": 357342.8487654321
+      },
+      "ref": {
+        "median": 719333.3288590604,
+        "q1": 719205.5369127516,
+        "q3": 723560.9597315437
+      },
+      "ratio": 0.4935688296584165,
+      "verdict": "faster"
+    },
+    {
+      "name": "DrawImage 64x64 to 16x16 opaque",
+      "func": "AccumPremul",
+      "reference": "Pillow reduce(4) on RGBA",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 60010,
+      "ref_iters": 17515,
+      "rounds": [
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 1762.4125145809032,
+          "ref_ns": 6283.970882101056
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 1785.913447758707,
+          "ref_ns": 6329.367684841564
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 1763.6123146142309,
+          "ref_ns": 6338.7929203539825
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 1748.4919180136644,
+          "ref_ns": 6298.922352269483
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 1751.8121979670054,
+          "ref_ns": 6287.896089066515
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 1756.851641393101,
+          "ref_ns": 6373.19440479589
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 1770.263289451758,
+          "ref_ns": 6266.086211818441
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 1762.4125145809032,
+        "q1": 1754.3319196800533,
+        "q3": 1766.9378020329946
+      },
+      "ref": {
+        "median": 6298.922352269483,
+        "q1": 6285.933485583786,
+        "q3": 6334.080302597773
+      },
+      "ratio": 0.27979587872613026,
+      "verdict": "faster"
+    },
+    {
+      "name": "DrawImage 1000x700 to 250x175 opaque",
+      "func": "AccumPremul",
+      "reference": "Pillow reduce(4) on RGBA",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 423,
+      "ref_iters": 183,
+      "rounds": [
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 268420.3096926714,
+          "ref_ns": 596467.6721311476
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 272038.21749408985,
+          "ref_ns": 588019.8087431694
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 269992.71158392436,
+          "ref_ns": 584538.4808743169
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 268164.89361702127,
+          "ref_ns": 595910.2950819673
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 266608.55082742317,
+          "ref_ns": 607872.4972677595
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 285542.8486997636,
+          "ref_ns": 622136.1530054645
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 288350.9669030733,
+          "ref_ns": 610625
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 269992.71158392436,
+        "q1": 268292.60165484634,
+        "q3": 278790.53309692675
+      },
+      "ref": {
+        "median": 596467.6721311476,
+        "q1": 591965.0519125683,
+        "q3": 609248.7486338797
+      },
+      "ratio": 0.4526527156438414,
+      "verdict": "faster"
+    },
+    {
+      "name": "DrawImage 1000x700 to 250x175 opaque vs RGBa",
+      "func": "AccumPremul",
+      "reference": "Pillow reduce(4) on RGBa",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 403,
+      "ref_iters": 370,
+      "rounds": [
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 272642.6799007444,
+          "ref_ns": 289000.3378378378
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 275532.15632754343,
+          "ref_ns": 288642.6810810811
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 269253.51612903224,
+          "ref_ns": 287480.1810810811
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 269907.1538461539,
+          "ref_ns": 274413.9621621622
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": true,
+          "go_ns": 268426.69478908187,
+          "ref_ns": 278585.0216216216
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 4.9365234375,
+          "go_first": false,
+          "go_ns": 267535.7717121588,
+          "ref_ns": 277047.7486486487
+        },
+        {
+          "load_before": 4.9365234375,
+          "load_after": 5.021484375,
+          "go_first": true,
+          "go_ns": 267751.86104218365,
+          "ref_ns": 277354.5054054054
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 269253.51612903224,
+        "q1": 268089.27791563276,
+        "q3": 271274.9168734491
+      },
+      "ref": {
+        "median": 278585.0216216216,
+        "q1": 277201.1270270271,
+        "q3": 288061.4310810811
+      },
+      "ratio": 0.9665039224353433,
+      "verdict": "faster"
+    },
+    {
+      "name": "DrawImage 1000x700 to 250x175 opaque vs RGBX",
+      "func": "AccumPremul",
+      "reference": "Pillow reduce(4) on RGBX",
+      "parity": "tolerance",
+      "allocs": 0,
+      "go_iters": 416,
+      "ref_iters": 374,
+      "rounds": [
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": true,
+          "go_ns": 344531.7524038461,
+          "ref_ns": 277978.4973262032
+        },
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": false,
+          "go_ns": 267245.49278846156,
+          "ref_ns": 278652.7406417112
+        },
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": true,
+          "go_ns": 267748.5985576923,
+          "ref_ns": 275623.2192513369
+        },
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": false,
+          "go_ns": 267794.3725961539,
+          "ref_ns": 274704.32085561496
+        },
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": true,
+          "go_ns": 267875.20192307694,
+          "ref_ns": 276209.44919786096
+        },
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": false,
+          "go_ns": 268683.49278846156,
+          "ref_ns": 276926.4705882353
+        },
+        {
+          "load_before": 5.021484375,
+          "load_after": 5.021484375,
+          "go_first": true,
+          "go_ns": 268216.6466346154,
+          "ref_ns": 278478.3877005348
+        }
+      ],
+      "valid": true,
+      "go": {
+        "median": 267875.20192307694,
+        "q1": 267771.4855769231,
+        "q3": 268450.0697115385
+      },
+      "ref": {
+        "median": 276926.4705882353,
+        "q1": 275916.33422459895,
+        "q3": 278228.442513369
+      },
+      "ratio": 0.9673152637018337,
+      "verdict": "faster"
+    }
+  ]
+}
