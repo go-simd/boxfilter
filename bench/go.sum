@@ -1,0 +1,10 @@
+github.com/go-fleettools/fleettools v0.81.0 h1:UnMflmNw5b82Z+7Ums7UVaW5RrGuACCVmSwytwT1hxw=
+github.com/go-fleettools/fleettools v0.81.0/go.mod h1:y/o3p2HZAvto9J5G5gtPxhN45zgvaYFAXCY9RCK/lQw=
+github.com/go-gfx/gfx v0.41.0 h1:MVEnory0Zx8ypzuVDrTIWz4Cekv8hn5ilcYg3glJPrk=
+github.com/go-gfx/gfx v0.41.0/go.mod h1:4OenoKrgdht6UXYf5SV8w2tb41hfAdy4QoxJRPsRDz4=
+github.com/go-scikit/refbench v0.4.1 h1:aqij6OTpP+yrLClggS7eRRyggW0zEgjhlwfzGhcP5BI=
+github.com/go-scikit/refbench v0.4.1/go.mod h1:PhJxvLwXiQeKLP2f5ndcb9k5k4PTvU1rSFJ/MKRCrU0=
+github.com/go-widgets/painter v0.20.2 h1:1z/jqofMPV9hhH8bqsaEWKXb6unrEf18og4f95/HY5o=
+github.com/go-widgets/painter v0.20.2/go.mod h1:eOZAFxd6o4Xdw0m4mJtNwZ9y7Z5SXtrO1IoEmKaqsvc=
+golang.org/x/sys v0.50.0 h1:dkKZEFTEKaLr1sjhs0WiKqoi8Jj5nHbS3Njmx1UoMJs=
+golang.org/x/sys v0.50.0/go.mod h1:hNLxWAXmnKAxqDtdwIYC4bM9oQPEecfsnNMuSxOs3og=

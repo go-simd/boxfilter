@@ -23,6 +23,21 @@ func accumPremulAVX2(acc []uint32, src []byte, w uint64)
 //go:noescape
 func sumGroupsAVX2(dst, src []uint32, n int)
 
+// sumBlocksAVX2 writes len(dst)/4 destination pixels, each the sum of an n x m
+// block of premultiplied pixels (n, m >= 1), the first block starting at src[0]
+// and the rows stride bytes apart; it reads no byte outside the blocks.
+//
+//go:noescape
+func sumBlocksAVX2(dst []uint32, src []byte, stride, n, m int)
+
+func sumBlocks(dst []uint32, src []byte, stride, n, m, groups int) (done int) {
+	if groups == 0 || !hasAVX2 {
+		return 0
+	}
+	sumBlocksAVX2(dst[:4*groups], src, stride, n, m)
+	return groups
+}
+
 func accumPremul(acc []uint32, src []byte, n int, w uint32) (done int) {
 	units := n / 4
 	if units == 0 || !hasAVX2 {

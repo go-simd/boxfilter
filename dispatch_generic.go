@@ -11,4 +11,6 @@ package boxfilter
 
 func accumPremul(acc []uint32, src []byte, n int, w uint32) (done int) { return 0 }
 
+func sumBlocks(dst []uint32, src []byte, stride, n, m, groups int) (done int) { return 0 }
+
 func sumGroups(dst, src []uint32, groups, n int) (done int) { return 0 }

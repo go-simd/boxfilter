@@ -46,6 +46,7 @@ func main() {
 	f := emit.NewFile("arm64")
 	f.Add(accumKernel().Func())
 	f.Add(sumKernel().Func())
+	f.Add(blocksKernel().Func())
 	out := strings.Replace(f.String(), "//go:build arm64\n", "//go:build arm64 && go1.27\n", 1)
 	if err := os.WriteFile("kernels_arm64.s", []byte(out), 0o644); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -97,6 +98,82 @@ func accumKernel() *arm64.Builder {
 		Raw("VLD1.P 16(R0), [V0.B16]")
 	unit(b, 0, 4, 6, 8)
 	b.Label("done").Ret()
+	return b
+}
+
+// blocksUnit emits the work for ONE register of up to four pixels in V0 (V1 holds
+// the constant 1, the second VTBL table register): premultiply, then add the four
+// pixels into four independent accumulators V8..V11 (a chain of one dependent add
+// per unit, not four) with the widening add UADDW, exact in 32 bits and with no
+// multiply: every weight of a block is 1.
+func blocksUnit(b *arm64.Builder) {
+	b.Raw("VTBL V30.B16, [V0.B16, V1.B16], V4.B16").
+		Raw("VUMULL V0.B8, V4.B8, V6.H8").
+		Raw("VUMULL2 V0.B16, V4.B16, V7.H8").
+		Raw("VUADDW V6.H4, V8.S4, V8.S4").
+		Raw("VUADDW2 V6.H8, V9.S4, V9.S4").
+		Raw("VUADDW V7.H4, V10.S4, V10.S4").
+		Raw("VUADDW2 V7.H8, V11.S4, V11.S4")
+}
+
+// blocksKernel: R0 dst, R1 src (start of the first group in row 0), R2 stride in
+// bytes, R3 n pixels per row of a block, R4 m rows, R5 groups (destination pixels)
+// left, R6 whole units of four pixels per row (n/4), R7 the 0..3 pixels left over,
+// R12 the bytes of a group's row (4n), R8 the first pixel of this group in the
+// current row, R10 the load cursor, R9 rows left, R11 units left.
+//
+// One destination pixel is the sum of an n x m block of premultiplied pixels,
+// held in four vector accumulators for the whole block: the source is read once
+// and nothing but the result is stored. The 1..3 pixels left over (n not a
+// multiple of four) are loaded into a zeroed register with lane loads, so no byte
+// beyond the block is read, and the zero pixels add nothing.
+func blocksKernel() *arm64.Builder {
+	sig := abi.LayoutArgs(
+		[]abi.Arg{abi.Slice("dst"), abi.Slice("src"), abi.Scalar("stride", abi.Int64), abi.Scalar("n", abi.Int64), abi.Scalar("m", abi.Int64)},
+		nil,
+	)
+	b := arm64.NewFunc("sumBlocksNEON", sig, 0)
+	b.LoadArg("dst_base", "R0").LoadArg("dst_len", "R5").LoadArg("src_base", "R1").
+		LoadArg("stride", "R2").LoadArg("n", "R3").LoadArg("m", "R4").
+		Raw("LSR $2, R5, R5").
+		Raw("CBZ R5, done").
+		Raw("LSR $2, R3, R6").Raw("AND $3, R3, R7").Raw("LSL $2, R3, R12").
+		Raw("MOVD $0x10070707_10030303, R13").Raw("MOVD $0x100F0F0F_100B0B0B, R14").
+		Raw("VMOV R13, V30.D[0]").Raw("VMOV R14, V30.D[1]").
+		Raw("VEOR V1.B16, V1.B16, V1.B16").
+		Raw("MOVD $1, R13").Raw("VMOV R13, V1.D[0]").
+		Label("group").
+		Raw("VEOR V8.B16, V8.B16, V8.B16").Raw("VEOR V9.B16, V9.B16, V9.B16").
+		Raw("VEOR V10.B16, V10.B16, V10.B16").Raw("VEOR V11.B16, V11.B16, V11.B16").
+		Raw("MOVD R1, R8").Raw("MOVD R4, R9").
+		Label("row").
+		Raw("MOVD R8, R10").Raw("MOVD R6, R11").
+		Raw("CBZ R11, tail").
+		Label("unit").
+		Raw("VLD1.P 16(R10), [V0.B16]")
+	blocksUnit(b)
+	b.Raw("SUBS $1, R11, R11").Raw("BNE unit").
+		Label("tail").
+		Raw("CBZ R7, rowend").
+		Raw("VEOR V0.B16, V0.B16, V0.B16").
+		Raw("TST $2, R7").Raw("BEQ one").
+		Raw("VLD1.P 8(R10), V0.D[0]").
+		Label("one").
+		Raw("TST $1, R7").Raw("BEQ last").
+		Raw("TST $2, R7").Raw("BNE lane2").
+		Raw("VLD1 (R10), V0.S[0]").Raw("B last").
+		Label("lane2").
+		Raw("VLD1 (R10), V0.S[2]").
+		Label("last")
+	blocksUnit(b)
+	b.Label("rowend").
+		Raw("ADD R2, R8, R8").
+		Raw("SUBS $1, R9, R9").Raw("BNE row").
+		Raw("VADD V8.S4, V9.S4, V8.S4").Raw("VADD V10.S4, V11.S4, V10.S4").Raw("VADD V8.S4, V10.S4, V8.S4").
+		Raw("VST1.P [V8.S4], 16(R0)").
+		Raw("ADD R12, R1, R1").
+		Raw("SUBS $1, R5, R5").Raw("BNE group").
+		Label("done").Ret()
 	return b
 }
 
