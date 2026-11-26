@@ -51,5 +51,23 @@ Apple M4 Max, `-cpu 1`, one row of N pixels, `AccumPremul(acc, src, 1)`:
 | 256 | 277.6 ns | 47.5 ns | 5.8x |
 | 1000 | 1096 ns | 170.9 ns | 6.4x |
 
+Against Pillow 13.0.0 (the reference tool), through `painter.DrawImage`, which
+uses `SumBlocks` for whole-number ratios. Apple M4 Max, `-cpu 1`, 1-min load
+4.9 to 5.2 (gate 8); Go time / Pillow time, below 1 is faster; full record in
+[docs/perf-table.md](docs/perf-table.md), reproduced by `bench/` (hash-pinned
+Python requirements):
+
+| picture | Pillow call | ratio |
+| --- | --- | ---: |
+| 1000x700 to 250x175, translucent | resize(BOX) on RGBa | 0.49 |
+| 256x256 to 24x24, translucent | resize(BOX) on RGBa | 0.66 |
+| 64x64 to 16x16, translucent | resize(BOX) on RGBa | 0.38 |
+| 1000x700 to 250x175, opaque | reduce(4) on RGBA | 0.45 |
+| 1000x700 to 250x175, opaque | reduce(4) on RGBa | 0.97 |
+| 1000x700 to 250x175, opaque | reduce(4) on RGBX | 0.97 |
+
+Pillow's `reduce` on RGBA does not premultiply, so RGBa and RGBX are the
+semantics-equal comparisons; the amd64 kernel is checked on CI runners only.
+
 Used by [go-widgets/painter](https://github.com/go-widgets/painter) for its
 downscaling `DrawImage`.
