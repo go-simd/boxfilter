@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/go-scikit/refbench v0.4.1
-	github.com/go-widgets/painter v0.20.3
+	github.com/go-widgets/painter v0.21.0
 )
 
 require (
